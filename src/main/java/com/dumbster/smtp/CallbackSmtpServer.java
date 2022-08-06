@@ -78,11 +78,6 @@ public final class CallbackSmtpServer implements AutoCloseable {
 		return new CallbackSmtpServer(factory.createServerSocket(port), callback);
 	}
 
-	/**
-	 * private constructor because factory method {@link #start(int)} better indicates that
-	 * the created server is already running
-	 * @param serverSocket socket to listen on
-	 */
 	private CallbackSmtpServer(ServerSocket serverSocket, Consumer<SmtpMessage> callback) {
 		this.serverSocket = serverSocket;
 		this.pool.execute(() -> handleConnection(serverSocket, this.stopped, this.pool, callback));
