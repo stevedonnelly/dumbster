@@ -142,7 +142,8 @@ public final class CallbackSmtpServer implements AutoCloseable {
 			while (!stopped.get()) {
 				// Start server socket and listen for client connections
 				//noinspection resource
-				try (Socket socket = serverSocket.accept()) {
+				try {
+					final Socket socket = serverSocket.accept();
 					Runnable accept = () -> {
 						try {
 							Scanner input = new Scanner(new InputStreamReader(socket.getInputStream(), StandardCharsets.ISO_8859_1)).useDelimiter(CRLF);
@@ -151,9 +152,17 @@ public final class CallbackSmtpServer implements AutoCloseable {
 							messages.forEach(handler);
 						} catch(Exception e) {
 							throw new RuntimeException(e);
+						} finally {
+							try {
+								socket.close();
+							} catch(Exception e) {
+								// do nothing
+							}
 						}
 					};
 					pool.execute(accept);
+				} catch(Exception e) {
+					// do nothing
 				}
 			}
 		} catch (Exception e) {
