@@ -17,13 +17,9 @@
  */
 package com.dumbster.smtp;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Container for a complete SMTP message - headers and message body.
@@ -33,6 +29,8 @@ public class SmtpMessage {
 	private Map<String, List<String>> headers;
 	/** Message body. */
 	private StringBuilder body;
+
+	private static Pattern hexPattern = Pattern.compile("=[0-9A-Fa-f][0-9A-Fa-f]");
 
 	/** Constructor. Initializes headers Map and body buffer. */
 	public SmtpMessage() {
@@ -56,10 +54,18 @@ public class SmtpMessage {
 					addHeader(name, value);
 				}
 			} else if (SmtpState.DATA_BODY == response.getNextState()) {
-				System.out.println("-------email body segment:");
-				System.out.println(params);
-				System.out.println("-------");
-				body.append(params);
+				String decoded = params;
+				Matcher matcher = hexPattern.matcher(decoded);
+				while(matcher.find()) {
+					String match = matcher.group();
+					String c = "" + (char)(Integer.valueOf(matcher.group().substring(1), 16).intValue());
+					decoded = decoded.replace(match, c);
+					matcher = hexPattern.matcher(decoded);
+				}
+				int lastIndex = decoded.length() - 1;
+				String fixNewLine = (lastIndex >= 0 && decoded.substring(lastIndex).equals("=")) ?
+						decoded.substring(0, lastIndex) : decoded + "\n";
+				body.append(fixNewLine);
 			}
 		}
 	}
