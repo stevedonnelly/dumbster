@@ -56,6 +56,9 @@ public class SmtpMessage {
 					addHeader(name, value);
 				}
 			} else if (SmtpState.DATA_BODY == response.getNextState()) {
+				System.out.println("-------email body segment:");
+				System.out.println(params);
+				System.out.println("-------");
 				body.append(params);
 			}
 		}
