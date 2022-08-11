@@ -151,7 +151,7 @@ public final class CallbackSmtpServer implements AutoCloseable {
 							List<SmtpMessage> messages = handleTransaction(out, input);
 							messages.forEach(handler);
 						} catch(Exception e) {
-							throw new RuntimeException(e);
+							// do nothing on invalid messages
 						} finally {
 							try {
 								socket.close();
